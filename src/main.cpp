@@ -4,9 +4,6 @@ int c1 = 0;
 int c2 = 0;
 int c3 = 0;
 
-TaskHandle_t task1_handle = NULL;
-TaskHandle_t task2_handle = NULL;
-TaskHandle_t task3_handle = NULL;
 static SemaphoreHandle_t mutex;
 
 void task1(void *parameters)

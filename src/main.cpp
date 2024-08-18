@@ -2,16 +2,24 @@
 
 int c1 = 0;
 int c2 = 0;
+int c3 = 0;
 
 TaskHandle_t task1_handle = NULL;
 TaskHandle_t task2_handle = NULL;
+TaskHandle_t task3_handle = NULL;
+static SemaphoreHandle_t mutex;
 
 void task1(void *parameters)
 {
   for (;;)
   {
-    Serial.print("Task 1 Counter1:");
-    Serial.println(c1++);
+    if (xSemaphoreTake(mutex, 0) == pdTRUE)
+    {
+      Serial.print("Task 1:");
+      Serial.println(1);
+      c1++;
+      xSemaphoreGive(mutex);
+    }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
@@ -19,24 +27,42 @@ void task2(void *parameters)
 {
   for (;;)
   {
-    Serial.print("Task 2 Counter2:");
-    Serial.println(c2++);
+    if (xSemaphoreTake(mutex, 0) == pdTRUE)
+    {
+      Serial.print("Task 2:");
+      Serial.println(2);
+      c2++;
+      xSemaphoreGive(mutex);
+    }
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+void task3(void *parameters)
+{
+  for (;;)
+  {
+    if (xSemaphoreTake(mutex, 0) == pdTRUE)
+    {
+      Serial.print("Task 3:");
+      Serial.println(3);
+      c3++;
+      xSemaphoreGive(mutex);
+    }
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 void setup()
 {
   Serial.begin(115200);
-  xTaskCreate(task1, "Task1", 1000, NULL, 1, &task1_handle);
-  xTaskCreate(task2, "Task2", 1000, NULL, 2, &task2_handle);
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  mutex = xSemaphoreCreateMutex();
+  xTaskCreate(task1, "Task1", 1000, NULL, 1, NULL);
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  xTaskCreate(task2, "Task2", 1000, NULL, 1, NULL);
+  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  xTaskCreate(task3, "Task3", 1000, NULL, 1, NULL);
 }
 
 void loop()
 {
-  if (c1 > 3 && task1_handle != NULL)
-  {
-    // Serial.print("KK");
-    vTaskSuspend(task1_handle);
-  }
-  
 }
